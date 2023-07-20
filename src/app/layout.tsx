@@ -1,8 +1,8 @@
 import { ThemeProvider } from '@/components/theme-provider';
+import { AuthContextProvider } from '@/contexts/auth-context';
 import type { Metadata } from 'next';
 import { Poppins } from 'next/font/google';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { Toaster } from 'react-hot-toast';
 import './globals.css';
 
 const poppins = Poppins({
@@ -22,15 +22,17 @@ export default function RootLayout({
 }) {
   return (
     <html lang='pt-br'>
-      <body className={poppins.className}>
+      <body className={`${poppins.className} min-h-screen flex flex-col`}>
         <ThemeProvider
           attribute='class'
-          defaultTheme='light'
+          defaultTheme='system'
           enableSystem
         >
-          {children}
+          <AuthContextProvider>
+            {children}
+            <Toaster />
+          </AuthContextProvider>
         </ThemeProvider>
-        <ToastContainer />
       </body>
     </html>
   );

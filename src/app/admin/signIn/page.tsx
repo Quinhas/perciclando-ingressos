@@ -17,68 +17,76 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { api } from '@/services/api';
+import { Logo } from '@/components/ui/logo';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { useAuth } from '@/hooks/use-auth';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { isAxiosError } from 'axios';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
-import { toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 import * as yup from 'yup';
-import { Ticket } from '../[id]/page';
 
 interface FormFields {
-  name: string;
-  ticketNumber: number;
+  username: string;
+  password: string;
 }
 
 const formSchema = yup
   .object({
-    name: yup.string().required(),
-    ticketNumber: yup.number().positive().integer().required().min(0).max(500),
+    username: yup
+      .string()
+      .required('Campo obrigatório.')
+      .max(50, 'O nome de usuário deve ter no máximo 50 caracteres.'),
+    password: yup
+      .string()
+      .required('Campo obrigatório.')
+      .min(6, 'A senha deve conter pelo menos 6 caracteres.'),
   })
   .required();
 
-export default function NewTicket() {
+export default function SignIn() {
+  const { signIn } = useAuth();
   const router = useRouter();
 
   const form = useForm<FormFields>({
     resolver: yupResolver(formSchema),
+    mode: 'all',
     defaultValues: {
-      name: '',
-      ticketNumber: 0,
+      username: '',
+      password: '',
     },
   });
 
   async function onSubmit(values: FormFields) {
     try {
-      const { data } = await api.post<Ticket>('/tickets', {
-        name: values.name,
-        number: values.ticketNumber,
+      await signIn({
+        username: values.username,
+        password: values.password,
       });
 
-      router.push(`/tickets/${data.id}`);
+      router.push(`/admin`);
     } catch (error) {
       let message = 'Ocorreram erros. Tente novamente.';
       if (isAxiosError(error) && error.response?.data) {
         message = error.response.data.message;
       }
-      toast(message, {
+      toast.error(message, {
+        className: 'bg-red-500 text-red-50 dark:bg-red-300 dark:text-red-900',
         position: 'bottom-center',
-        pauseOnHover: false,
-        hideProgressBar: true,
       });
     }
   }
 
   return (
-    <div className='flex items-center justify-center h-screen bg-zinc-800'>
-      <Card className='max-w-[80%] w-80 aspect-[3/4] flex flex-col justify-center bg-sky-400 shadow-lg border-none text-zinc-800'>
+    <main className='flex items-center justify-center'>
+      <div className='absolute right-4 top-4'>
+        <ThemeToggle />
+      </div>
+      <Card className='max-w-[80%] w-96 aspect-[3/4] flex flex-col shadow-lg'>
         <CardHeader>
           <CardTitle>Perciclando</CardTitle>
-          <CardDescription className='text-zinc-800'>
-            Gerador de Ingressos
-          </CardDescription>
+          <CardDescription>Administracional</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -88,14 +96,14 @@ export default function NewTicket() {
             >
               <FormField
                 control={form.control}
-                name='name'
-                render={({ field }) => (
+                name='username'
+                render={({ field, fieldState }) => (
                   <FormItem>
-                    <FormLabel>Nome</FormLabel>
+                    <FormLabel>Nome de Usuário</FormLabel>
                     <FormControl>
                       <Input
                         type='text'
-                        placeholder='Nome'
+                        placeholder='Nome de Usuário'
                         {...field}
                       />
                     </FormControl>
@@ -105,14 +113,14 @@ export default function NewTicket() {
               />
               <FormField
                 control={form.control}
-                name='ticketNumber'
-                render={({ field }) => (
+                name='password'
+                render={({ field, fieldState }) => (
                   <FormItem>
-                    <FormLabel>Número do Ingresso</FormLabel>
+                    <FormLabel>Senha</FormLabel>
                     <FormControl>
                       <Input
-                        type='number'
-                        placeholder='Número do Ingresso'
+                        type='password'
+                        placeholder='Senha'
                         {...field}
                       />
                     </FormControl>
@@ -122,24 +130,17 @@ export default function NewTicket() {
               />
               <Button
                 type='submit'
-                className='w-full bg-stone-900 hover:bg-stone-800 active:bg-stone-700'
+                className='w-full btn-green'
               >
-                Gerar Ingresso
+                Entrar
               </Button>
             </form>
           </Form>
         </CardContent>
-        <CardFooter className='flex flex-1 w-full'>
-          <Link
-            href={'/'}
-            className='flex flex-1'
-          >
-            <Button className='w-full bg-stone-900 hover:bg-stone-800 active:bg-stone-700'>
-              Início
-            </Button>
-          </Link>
+        <CardFooter className='flex justify-center'>
+          <Logo className='text-3xl' />
         </CardFooter>
       </Card>
-    </div>
+    </main>
   );
 }
