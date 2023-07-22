@@ -1,19 +1,23 @@
 'use client';
 
 import { Ticket, ticketsService } from '@/services/perciclando-api/tickets';
+import {
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  Heading,
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr,
+} from '@chakra-ui/react';
 import { Check, Loader2, QrCode } from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
-import { Button } from './ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from './ui/table';
 
 export function TicketsTable() {
   const [tickets, setTickets] = useState<Ticket[] | undefined | null>(
@@ -34,69 +38,75 @@ export function TicketsTable() {
   }, [getTickets]);
 
   if (tickets === undefined) {
-    return <Loader2 className='animate-spin' />;
+    return (
+      <div className='flex items-center justify-center flex-grow h-16'>
+        <Loader2 className='animate-spin' />
+      </div>
+    );
   }
 
   if (tickets === null) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Oops!</CardTitle>
+          <Heading>Oops!</Heading>
         </CardHeader>
-        <CardContent>
+        <CardBody>
           Não foi possível recuperar as informações desejadas. Tente novamente.
-        </CardContent>
+        </CardBody>
       </Card>
     );
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className='text-right'>Nº</TableHead>
-          <TableHead>Nome</TableHead>
-          <TableHead className='text-right'>Criador</TableHead>
-          <TableHead className='text-center'>Validado</TableHead>
-          <TableHead></TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {tickets.length === 0 && (
-          <TableRow>
-            <TableCell
-              colSpan={5}
-              className='text-sm p-2 text-muted-foreground'
-            >
-              Opa! Ainda não existem registros para serem mostrados aqui.
-            </TableCell>
-          </TableRow>
-        )}
-        {tickets.length > 0 &&
-          tickets.map((ticket) => (
-            <TableRow key={ticket.id}>
-              <TableCell className='text-right'>
-                {String(ticket.number).padStart(3, '0')}
-              </TableCell>
-              <TableCell>{ticket.name}</TableCell>
-              <TableCell className='text-right'>
-                {ticket.createdByUser?.username ?? '-'}
-              </TableCell>
-              <TableCell>
-                {ticket.validatedAt && (
-                  <Check className='mx-auto text-green-500 dark:text-green-300' />
-                )}
-              </TableCell>
-              <TableCell className='text-right'>
-                <Link href={`/admin/tickets/${ticket.id}`}>
-                  <Button className='btn-zinc'>
-                    <QrCode />
-                  </Button>
-                </Link>
-              </TableCell>
-            </TableRow>
-          ))}
-      </TableBody>
-    </Table>
+    <TableContainer>
+      <Table>
+        <Thead>
+          <Tr>
+            <Th className='text-right'>Nº</Th>
+            <Th>Nome</Th>
+            <Th className='text-right'>Criador</Th>
+            <Th className='text-center'>Validado</Th>
+            <Th></Th>
+          </Tr>
+        </Thead>
+        <Tbody>
+          {tickets.length === 0 && (
+            <Tr>
+              <Td
+                colSpan={5}
+                className='text-sm p-2 text-muted-foreground'
+              >
+                Opa! Ainda não existem registros para serem mostrados aqui.
+              </Td>
+            </Tr>
+          )}
+          {tickets.length > 0 &&
+            tickets.map((ticket) => (
+              <Tr key={ticket.id}>
+                <Td className='text-right'>
+                  {String(ticket.number).padStart(3, '0')}
+                </Td>
+                <Td>{ticket.name}</Td>
+                <Td className='text-right'>
+                  {ticket.createdByUser?.username ?? '-'}
+                </Td>
+                <Td>
+                  {ticket.validatedAt && (
+                    <Check className='mx-auto text-green-500 dark:text-green-300' />
+                  )}
+                </Td>
+                <Td className='text-right'>
+                  <Link href={`/admin/tickets/${ticket.id}`}>
+                    <Button variant='gray'>
+                      <QrCode />
+                    </Button>
+                  </Link>
+                </Td>
+              </Tr>
+            ))}
+        </Tbody>
+      </Table>
+    </TableContainer>
   );
 }

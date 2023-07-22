@@ -44,7 +44,7 @@ export const ticketsService = {
   async getAll(): Promise<Ticket[]> {
     try {
       const { data } = await httpClient.get<TicketGetAllAPIResponse>(
-        `/tickets`,
+        '/tickets',
         {
           headers: { Authorization: `Bearer ${getAccessToken()}` },
         },

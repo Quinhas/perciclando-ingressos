@@ -1,37 +1,40 @@
-'use client';
-
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/use-auth';
+import {
+  Button,
+  Card,
+  CardBody,
+  CardFooter,
+  CardHeader,
+  Heading,
+} from '@chakra-ui/react';
 import { LogOut } from 'lucide-react';
 
 export default function Admin() {
   const { signOut } = useAuth();
 
   async function handleSignOut() {
-    try {
-      await signOut();
-    } catch (error) {}
+    await signOut();
   }
 
   return (
-    <main>
+    <div className='flex justify-center p-4'>
       <Card>
         <CardHeader>
-          <CardTitle>Perciclando</CardTitle>
+          <Heading>Perciclando</Heading>
         </CardHeader>
-        <CardContent>
+        <CardBody></CardBody>
+        <CardFooter>
           <Button
             onClick={handleSignOut}
             title='Sair'
-            className='flex flex-row gap-2 items-center justify-center w-full btn-blue'
-            type='button'
+            colorScheme='blue'
+            variant='solid'
           >
             Sair
             <LogOut />
           </Button>
-        </CardContent>
+        </CardFooter>
       </Card>
-    </main>
+    </div>
   );
 }

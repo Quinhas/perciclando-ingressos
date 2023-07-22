@@ -3,7 +3,8 @@ import axios from 'axios';
 import { httpClient } from '../http-client';
 
 declare interface APIError {
-  error: {
+  message?: string;
+  error?: {
     message: string;
   };
 }
@@ -29,7 +30,11 @@ export const authService = {
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         const { data } = error.response as { data: APIError };
-        throw new ApplicationException(data.error.message);
+        throw new ApplicationException(
+          data.message ??
+            data.error?.message ??
+            'Could not continue. Contact an administrator.',
+        );
       }
 
       throw new ApplicationException(

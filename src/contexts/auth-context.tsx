@@ -1,10 +1,10 @@
-'use client';
-import { Card } from '@/components/ui/card';
+import { AdminNavbar } from '@/components/admin-navbar';
 import { authService } from '@/services/perciclando-api/auth';
+import { Card } from '@chakra-ui/react';
 import axios from 'axios';
 import jwtDecode, { JwtPayload } from 'jwt-decode';
 import { Loader2 } from 'lucide-react';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/router';
 import type { ReactNode } from 'react';
 import {
   createContext,
@@ -26,6 +26,7 @@ interface SignInDTO {
 export interface AuthContextProps {
   user: UserProps | undefined;
   isLogged: boolean;
+  // eslint-disable-next-line no-unused-vars
   signIn: (props: SignInDTO) => Promise<void>;
   signOut: () => Promise<void>;
   isLoading: boolean;
@@ -39,20 +40,15 @@ export const AuthContext = createContext({} as AuthContextProps);
 
 export function AuthContextProvider({
   children,
-}: AuthContextProviderProps): JSX.Element {
+}: AuthContextProviderProps): ReactNode {
   const [user, setUser] = useState<UserProps | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const [isLogged, setIsLogged] = useState(false);
   const router = useRouter();
-  const pathname = usePathname();
 
   const validateToken = useCallback((token: string): string => {
-    try {
-      const decodedToken = jwtDecode<JwtPayload & { id: string }>(token);
-      return decodedToken.id;
-    } catch (error) {
-      throw error;
-    }
+    const decodedToken = jwtDecode<JwtPayload & { id: string }>(token);
+    return decodedToken.id;
   }, []);
 
   const signOut = useCallback(async () => {
@@ -66,11 +62,11 @@ export function AuthContextProvider({
 
   const signIn = useCallback(
     async ({ username, password }: SignInDTO) => {
-      setIsLoading(true);
       const data = await authService.signIn({
         username: username,
         password: password,
       });
+      setIsLoading(true);
       const id = validateToken(data.access_token);
       localStorage.setItem('perciclando@accessToken', data.access_token);
       setUser({
@@ -101,11 +97,13 @@ export function AuthContextProvider({
   }, [signOut, validateToken]);
 
   useEffect(() => {
-    if (!isLoading && isLogged) {
-      if (['/admin/signIn'].includes(pathname)) {
+    if (isLogged) {
+      if (['/admin/signIn'].includes(router.pathname)) {
         router.push('/admin');
       }
+    }
 
+    if (!isLoading && isLogged) {
       const token = localStorage.getItem('perciclando@accessToken') ?? '';
 
       console.log(token);
@@ -136,7 +134,7 @@ export function AuthContextProvider({
         axios.interceptors.response.eject(authInterceptor);
       };
     }
-  }, [signOut, isLoading, isLogged, router, pathname]);
+  }, [signOut, isLoading, isLogged, router]);
 
   const value = useMemo(
     () => ({
@@ -151,14 +149,21 @@ export function AuthContextProvider({
 
   if (isLoading) {
     return (
-      <main className='flex items-center justify-center h-screen'>
-        <Card className='max-w-[80%] aspect-video flex flex-col shadow-lg p-8 items-center justify-center gap-4'>
-          <Loader2 className='animate-spin' />
-          <p>Carregando...</p>
-        </Card>
-      </main>
+      <div className='flex justify-center flex-grow p-4'>
+        <div className='flex items-center justify-center h-screen'>
+          <Card className='max-w-[80%] aspect-video flex flex-col shadow-lg p-8 items-center justify-center gap-4'>
+            <Loader2 className='animate-spin' />
+            <p>Carregando...</p>
+          </Card>
+        </div>
+      </div>
     );
   }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      <AdminNavbar />
+      {children}
+    </AuthContext.Provider>
+  );
 }
